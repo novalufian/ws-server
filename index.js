@@ -9,7 +9,7 @@ var io = require("socket.io")(server, {
     },
     cors: {
         origin: "*"
-      }
+      } 
 });
 
 var clients = 0
