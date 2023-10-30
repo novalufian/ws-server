@@ -40,7 +40,7 @@ io.on("connection", function(socket) {
         var memberCount = io.sockets.adapter.rooms.get(room)?.size
         //global push to room member 
         socket.to(room).emit("memberCount", memberCount)
-        socket.to(room).emit("msgFromRoom", `user ${userId} bergabung room ${room} ${memberCount}`)
+        // socket.to(room).emit("msgFromRoom", `user ${userId} bergabung room ${room} ${memberCount}`)
         rooms[room] = memberCount
 
         //push total online user to current user on load / refresh
