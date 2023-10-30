@@ -1,19 +1,15 @@
 var http = require('http');
 var server = http.createServer();
-var rooms = {}
+var rooms = {} // data storage 
 
 var io = require("socket.io")(server, {
-    wsEngine: require("eiows").Server,
-    perMessageDeflate: {
-        threshold: 32768
-    },
     cors: {
         origin: "*"
       } 
 });
 
 var clients = 0
-
+ 
 io.on("connection", function(socket) {
     clients++
     var roomName = null
@@ -21,12 +17,19 @@ io.on("connection", function(socket) {
 
     socket.on('disconnect', function () {
         clients--;
-        io.sockets.emit('broadcast',clients);
 
-        // get total member on room
+        // get total member room
         var memberCount = io.sockets.adapter.rooms.get(roomName)?.size
-        //global push to room member 
+        //push to spesific room to update total online user
         socket.to(roomName).emit("memberCount", memberCount)
+
+        //update data storage
+        rooms[roomName] = memberCount
+
+        //send broadcast to all client
+        // to do reinit data / update data
+        io.sockets.emit('broadcast',clients);
+      
     });
 
     socket.on("joinRoom",(room, userId)=>{
@@ -43,6 +46,7 @@ io.on("connection", function(socket) {
         //push total online user to current user on load / refresh
         io.to(userId).emit("memberCount", memberCount)
         // emit member count 
+      io.sockets.emit('broadcast',clients);
 
     })
 
@@ -55,11 +59,12 @@ io.on("connection", function(socket) {
 
         //global push to room member 
         socket.to(room).emit("memberCount", memberCount)
+      io.sockets.emit('broadcast',clients);
+      console.log(memberCount)
     });
 
     socket.on("getRoomInfo",  (elIndex,room) => {
         // console.log("get info")
-        console.log(elIndex, room)
         socket.emit("roomInfo", rooms[room], elIndex)
     })
 
@@ -67,4 +72,6 @@ io.on("connection", function(socket) {
     // console.log(rooms)
 });
 
-server.listen(8080);
+server.listen(process.env.PORT , function(){
+  console.log("server run")
+});
